@@ -79,6 +79,15 @@ namespace DataStructure
 		size_t qtLines() const { return this->m; }
 		size_t qtColumns() const { return this->n; }
 		
+		bool contains(Type value, bool(*eqFunc)(Type&,Type&)) const
+		{
+			for(int i=0; i<m; i++)
+				for(int j=0; j<n; j++)
+					if(eqFunc(this->data[i][j],value))
+						return true;
+			return false;
+		}
+		
 		bool isSimetric() const 
 		{
 			if(m != n || m*n == 0)
@@ -90,6 +99,22 @@ namespace DataStructure
 						return false;
 			return true;
 		}
+		
+		template<typename T=Type>
+		decltype(auto) operator==(Matrix<T>& M)
+		{
+			if(m != M.qtLines() || n != M.qtColumns())
+				return false;
+			for(size_t i=0; i<m; i++)
+				for(size_t j=0; j<n; j++)
+					if(this->data[i][j] != M[i][j])
+						return false;
+			return true;
+		}
+		
+		template<typename T=Type>
+		decltype(auto) operator!=(Matrix<T>& M)
+		{ return !(this->operator==(M)); }
 
 		//acesso e manipulação
 		Type* operator[](size_t ln) const { return this->data[ln]; }

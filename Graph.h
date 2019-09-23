@@ -6,7 +6,62 @@
 
 namespace DataStructure
 {
-	template<class TypeV, class TypeR>
+	template<typename TypeV, typename TypeR, 
+				template<typename> typename TypeC, 
+				isBaseOf<Container<TypeR>,TypeC<TypeR>>* = nullptr>
+	class ProtoGraph : public Container<TypeR>
+	{
+	protected:
+		Vector<TypeV> vertex;
+		TypeC<TypeR> relation;
+		
+		virtual void resize(size_t new_size) = 0;
+		virtual TypeR* at(size_t index) const { return nullptr; }
+	public:		
+		//busca e verificação
+		bool isAllocated() const { return (vertex.isAllocated() && relation.isAllocated()); }
+		bool isEmpty() const { return vertex.isEmpty(); }
+		size_t getSize() const { return vertex.getSize(); }
+		long int indexOf(TypeV vtx) const { return vertex.indexOf(vtx); }
+		bool contains(TypeV vtx) const { return vertex.contains(vtx); }
+		bool contains(TypeV vtx1, TypeV vtx2) const = 0;
+		
+		bool operator==(ProtoGraph<TypeV,TypeR,TypeC>& g) = 0;
+		bool operator!=(ProtoGraph<TypeV,TypeR,TypeC>& g) = 0;
+				
+		//acesso e manipulação
+		TypeV& operator[](size_t index) const { return vertex[index]; }
+		TypeR& operator()(size_t index1, size_t index2) = 0;
+		
+		virtual void add(TypeV v) = 0;
+		virtual void add(TypeV v1, TypeV v2, TypeR weight) = 0;
+		virtual void remove(TypeV v) = 0;
+		virtual TypeR remove(TypeV v1, TypeV v2) = 0;
+		
+		void clear(){ vertex.clear(); relation.clear(); }
+		
+		//conversão para texto
+		std::string strFormat(char c=' ') const { return vertex.strFormat(c) + "\n" + relation.strFormat(c); }
+		operator std::string() const { return this->strFormat(); }
+		void print(){ std::cout << this->strFormat() << '\n'; }
+	};
+	
+	template<typename TypeV, typename TypeR>
+	class Graph : public ProtoGraph<TypeV,TypeR,HashSet>
+	{
+	};
+	
+	template<typename TypeV, typename TypeR>
+	class CompleteGraph : public ProtoGraph<TypeV,TypeR,Matrix>
+	{
+	};
+	
+	/*template<typename TypeV, typename TypeR>
+	class SparseGraph : public SparseMatrix<TypeV,TypeR,Matrix>
+	{
+	};*/
+
+	/*template<class TypeV, class TypeR>
 	class Graph : public Container<TypeV>
 	{
 	protected:
@@ -266,6 +321,6 @@ namespace DataStructure
 		
 		operator std::string(){ return this->strFormat(); }
 		virtual void print(){ std::cout << (this->strFormat()) << '\n'; }
-	};
+	};*/
 }
 #endif

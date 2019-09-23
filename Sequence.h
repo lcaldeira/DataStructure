@@ -10,10 +10,12 @@ namespace DataStructure
 	{
 	public:
 		//busca e verificação
-		virtual long int indexOf(Type value) const = 0;
+		virtual long int findNext(Type value, size_t idx, bool(*eqFunc)(Type&,Type&)) const = 0;
 		
-		template<typename T=Type, isFundamental<T>* = nullptr>
-		bool contains(Type value) const { return (this->indexOf(value) >= 0); }
+		virtual long int indexOf(Type value, bool(*eqFunc)(Type&,Type&)) const { return findNext(value,0,eqFunc); }
+		
+		virtual bool contains(Type value, bool(*eqFunc)(Type&,Type&)) const
+		{ return (indexOf(value,eqFunc) >= 0); }
 		
 		//acesso e manipulação
 		virtual Type& operator[](size_t index) const = 0;
@@ -26,6 +28,13 @@ namespace DataStructure
 			Type value = this->get(index1);
 			this->set(this->get(index2), index1);
 			this->set(value, index2);
+		}
+
+		virtual void reverse()
+		{
+			size_t size = this->getSize();
+			for(size_t i=0; i < (size-1)/2; i++)
+				this->swap(i, size-i-1);
 		}
 		
 		virtual void insert(Type value, size_t index) = 0;

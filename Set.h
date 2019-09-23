@@ -7,8 +7,8 @@
 namespace DataStructure
 {
 	template<typename Type, template<typename> class TypeC = List, 
-		isBaseOf<Sequence<Type>,TypeC<Type>>* = nullptr>
-	class Set : public TypeC<Type>
+				isBaseOf<Sequence<Type>,TypeC<Type>>* = nullptr>
+	class Set : protected TypeC<Type>
 	{
 	public:
 		//construtor e destrutor
@@ -26,7 +26,7 @@ namespace DataStructure
 		Set(const TypeC<Type>& s) : Set(s.getSize())
 		{
 			for(int i=0; i < s.getSize(); i++)
-				this->insert(s.get(i));
+				this->add(s.get(i));
 		}
 		
 		template<template<typename> class Tc>
@@ -42,7 +42,7 @@ namespace DataStructure
 		{
 			this->clear();
 			for(int i=0; i < s.getSize(); i++)
-				this->insert(s.get(i));
+				this->add(s.get(i));
 			return (*this);
 		}
 		
@@ -52,10 +52,34 @@ namespace DataStructure
 		bool isAllocated() const { return TypeC<Type>::isAllocated(); }
 		bool isEmpty() const { return TypeC<Type>::isEmpty(); }
 		size_t getSize() const { return TypeC<Type>::getSize(); }
-		long int indexOf(Type value) const { return TypeC<Type>::indexOf(value); }
-		bool contains(Type value) const { return TypeC<Type>::contains(value); }
 		
-		bool operator==(Set<Type>& s)
+		long int indexOf(Type value, bool(*eqFunc)(Type&,Type&)) const 
+		{ return Sequence<Type>::indexOf(value,eqFunc); }
+		
+		bool contains(Type value, bool(*eqFunc)(Type&,Type&)) const 
+		{ return Sequence<Type>::contains(value,eqFunc); }
+		
+		bool compare(Set<Type>& s, bool(*eqFunc)(Type&,Type&)) const 
+		{
+			size_t size = this->getSize();
+			if(size != s.getSize())
+				return false;
+			for(size_t i=0; i<size; i++)
+				if(!s.contains(this->get(i),eqFunc))
+					return false;
+			return true;
+		}
+		
+		template<typename T=Type>
+		auto indexOf(T value) const -> decltype(value == value, long())
+		{ return TypeC<Type>::indexOf(value); }
+		
+		template<typename T=Type>
+		auto contains(T value) const -> decltype(value == value, bool())
+		{ return TypeC<Type>::contains(value); }
+
+		template<typename T=Type>
+		decltype(auto) compare(Set<T>& s) const 
 		{
 			size_t size = this->getSize();
 			if(size != s.getSize())
@@ -66,7 +90,11 @@ namespace DataStructure
 			return true;
 		}
 		
-		bool operator!=(Set<Type>& s){ return !(this->operator==(s)); }
+		template<typename T=Type>
+		decltype(auto) operator==(Set<T>& s){ return compare(s); }
+		
+		template<typename T=Type>
+		decltype(auto) operator!=(Set<T>& s){ return !compare(s); }
 		
 		//acesso e manipulação
 		Type get(size_t index) const { return TypeC<Type>::get(index); }
@@ -80,7 +108,7 @@ namespace DataStructure
 				TypeC<Type>::swap(index,idx);
 		}
 		
-		void insert(Type value)
+		void add(Type value)
 		{
 			if(!this->contains(value))
 				TypeC<Type>::pushBack(value);
@@ -95,11 +123,6 @@ namespace DataStructure
 		
 		void clear(){ TypeC<Type>::clear(); }
 		
-		//conversão para texto
-		std::string strFormat(char c='{') const { return TypeC<Type>::strFormat(c); }
-		operator std::string() const { return TypeC<Type>::strFormat('{'); }
-		void print(){ std::cout << TypeC<Type>::strFormat('{') << '\n'; }
-		
 		//operações de conjunto
 		template<typename T, template<typename> class Tc1, template<typename> class Tc2>
 		friend Set<T> operator+(Set<T,Tc1> s1, Set<T,Tc2> s2);
@@ -113,19 +136,33 @@ namespace DataStructure
 		template<template<typename> class Tc>
 		void unionWith(Set<Type,Tc> s)
 		{
-			Set<Type> s0 = ((*this)+s);
-			clear();
-			for(int i=0; i < s0.getSize(); i++)
-				TypeC<Type>::pushBack(s0.get(i));
+			for(int i=0; i < s.getSize(); i++)
+				this->add(s.get(i));
+		}
+		template<template<typename> class Tc>
+		void diffWith(Set<Type,Tc> s)
+		{
+			for(int i=0; i < s.getSize(); i++)
+				this->remove(s.get(i));
 		}
 		template<template<typename> class Tc>
 		void intersecWith(Set<Type,Tc> s)
 		{
-			Set<Type> s0 = ((*this)^s);
-			clear();
-			for(int i=0; i < s0.getSize(); i++)
-				TypeC<Type>::pushBack(s0.get(i));
+			for(int i=0; i < this->getSize(); i++)
+				if(!s.contains(this->get(i)))
+				{
+					TypeC<Type>::erase(i);
+					i--;
+				}
 		}
+		
+		//conversão para texto
+		std::string strFormat(char c='{') const { return TypeC<Type>::strFormat(c); }
+		operator std::string() const { return TypeC<Type>::strFormat('{'); }
+		void print(){ std::cout << TypeC<Type>::strFormat('{') << '\n'; }
+		
+		template<class T>
+		friend std::ostream& operator<<(std::ostream& ost, Set<T>& c);
 	};
 	
 	template<typename T, template<typename> class Tc1, template<typename> class Tc2>
@@ -133,9 +170,9 @@ namespace DataStructure
 	{
 		Set<T> s = Set<T>(8);
 		for(int i=0; i < s1.getSize(); i++)
-			s.insert(s1.get(i));
+			s.add(s1.get(i));
 		for(int i=0; i < s2.getSize(); i++)
-			s.insert(s2.get(i));
+			s.add(s2.get(i));
 		return s;
 	}
 	
@@ -144,9 +181,8 @@ namespace DataStructure
 	{
 		Set<T> s = Set<T>(8);
 		for(int i=0; i < s1.getSize(); i++)
-			s.insert(s1.get(i));
-		for(int i=0; i < s2.getSize(); i++)
-			s.remove(s2.get(i));
+			if(!s2.contains(s1.get(i)))
+				s.add(s1.get(i));
 		return s;
 	}
 	
@@ -156,8 +192,15 @@ namespace DataStructure
 		Set<T> s = Set<T>(8);
 		for(int i=0; i < s1.getSize(); i++)
 			if(s2.contains(s1.get(i)))
-				s.insert(s1.get(i));
+				s.add(s1.get(i));
 		return s;
+	}
+
+	template<typename Type>
+	std::ostream& operator<<(std::ostream& ost, Set<Type>& s)
+	{
+		ost << s.strFormat();
+		return ost;
 	}
 }
 #endif

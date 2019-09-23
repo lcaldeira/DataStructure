@@ -55,24 +55,34 @@ namespace DataStructure
 				this->data.pushBack(List<Type>());
 		}
 		
-		HashSet<Type>(const HashSet<Type>& hs) : HashSet<Type>(hs.getHeigh())
+		/*HashSet<Type>(const HashSet<Type>& hs) : HashSet<Type>(hs.getHeigh())
 		{
 			List<Type> l = hs.toList();
+			this->clear();
+			this->data.resize(hs.getHeight());
 			while(!l.isEmpty())
-				this->insert(l.popFront());
-		}
+				this->add(l.popFront());
+			return *this;
+		}*/
 		
 		HashSet<Type> operator=(HashSet<Type> hs)
 		{
-			//this->~HashSet<Type>();
 			List<Type> l = hs.toList();
+			this->clear();
+			this->data.resize(hs.getHeight());
 			while(!l.isEmpty())
-				this->insert(l.popFront());
+				this->add(l.popFront());
 			return *this;
 		}
 
 		//busca e verificação
 		bool isAllocated() const { return this->data.isAllocated(); }
+		
+		bool contains(Type value) const
+		{
+			size_t hash = hashFunc(value,this->getHeight());
+			return this->data[hash].contains(value);
+		}
 		
 		size_t getSize() const 
 		{
@@ -82,20 +92,9 @@ namespace DataStructure
 			return size;
 		}
 		
-		size_t getHeigh() const { return this->data.getSize(); }
+		size_t getHeight() const { return this->data.getSize(); }
 		
-		float avgCharge() const 
-		{
-			float sizeV = this->data.getSize();
-			return (sizeV == 0 ? 0 : this->getSize() / sizeV);
-		}
-		
-		/*long int indexOf(Type value)
-		{
-			long int hash = (long int) this->getHash(value);
-			long int idx0 = this->data[hash].indexOf(value);
-			return (idx0 < 0 ? -1 : hash);
-		}*/
+		float avgCharge() const { return this->getSize() / (float)this->getHeight(); }
 
 		/*template<class T>
 		friend bool operator==(HashSet<T>& hs1, HashSet<T>& hs2);
@@ -104,29 +103,46 @@ namespace DataStructure
 		friend bool operator!=(HashSet<T>& hs1, HashSet<T>& hs2);*/
 		
 		//acesso e manipulação
-		void insert(Type value)
+		void add(Type value)
 		{
-			size_t hash = this->hashFunc(value, this->data.getSize());
-			std::cout << "Hash = " << hash << '\n';
-			//return;
+			size_t hash = this->hashFunc(value, this->getHeight());
 			if(!this->data[hash].contains(value))
 				this->data[hash].pushBack(value);
 		}
 		
 		void remove(Type value)
 		{
-			size_t hash = this->hashFunc(value, this->getSize());
+			size_t hash = this->hashFunc(value, this->getHeight());
 			long int index = this->data[hash].indexOf(value);
 			if(index >= 0)
-				this->data[hash].remove(index);
+				this->data[hash].erase(index);
+		}
+		
+		void reHash()
+		{
+			if(this->isEmpty())
+				return;
+			List<Type> l = this->toList();
+			this->clear();
+			this->data.resize(l.getSize());
+			while(this->getHeight() < l.getSize())
+				this->data.pushBack(List<Type>());
+			while(!l.isEmpty())
+				this->add(l.popFront());
+		}
+		
+		void clear()
+		{
+			for(size_t i=0; i<this->data.getSize(); i++)
+				this->data[i].clear();
 		}
 		
 		//conversão para outros containers
 		Vector<Type> toVector() const 
 		{
 			Vector<Type> v = Vector<Type>(this->getSize());
-			for(size_t i=0; i < this->getHeigh(); i++)
-				for(size_t j=0; j < this->data[i].getSize(); i++)
+			for(size_t i=0; i < this->getHeight(); i++)
+				for(size_t j=0; j < this->data[i].getSize(); j++)
 					v.pushBack(this->data[i][j]);
 			return v;
 		}
@@ -134,9 +150,9 @@ namespace DataStructure
 		List<Type> toList() const 
 		{
 			List<Type> l = List<Type>();
-			for(size_t i=0; i < this->getHeigh(); i++)
-				for(size_t j=0; j < this->data.get(i).getSize(); i++)
-					l.pushBack(this->data.get(i).get(j));
+			for(size_t i=0; i < this->getHeight(); i++)
+				for(size_t j=0; j < this->data[i].getSize(); j++)
+					l.pushBack(this->data[i][j]);
 			return l;
 		}
 		
@@ -145,11 +161,11 @@ namespace DataStructure
 		std::string strFormat(char c=' ') const 
 		{
 			std::stringstream ss;
-			size_t size = this->data.getSize();
+			size_t size = this->getHeight();
 			for(size_t i=0; i < size; i++)
 			{
 				if(c=' ')
-					ss << "|: ";
+					ss << (i==0 ? 'T' : '|') << ": ";
 				ss << this->data[i].strFormat(c);
 				if(i != size-1)
 					ss << '\n';

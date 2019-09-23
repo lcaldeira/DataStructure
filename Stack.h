@@ -15,8 +15,6 @@ namespace DataStructure
 		void pushBack(Type value){ Vector<Type>::pushBack(value);  }
 		Type popFront(){ return Vector<Type>::popFront();  }
 		Type popBack(){ return Vector<Type>::popBack();  }
-		long int indexOf(Type value){ return this->findNext(value,0); }
-		long int findNext(Type value, size_t i0){ return Vector<Type>::findNext(value, i0); }
 	public:
 		//construtor e destrutor
 		Stack<Type>() : Vector<Type>(){}
@@ -26,13 +24,11 @@ namespace DataStructure
 		void operator<<(Type value){ this->push(value); }
 		void operator>>(Type& ref){ ref = this->pop(); }
 		
-		Type* first(){ return (this->size > 0 ? &this->data[0] : nullptr); }
-		Type* last(){ return (this->size > 0 ? &this->data[this->size-1] : nullptr); }
-		
 		void push(Type value){ this->pushBack(value); }
 		Type pop(){ return this->popBack(); }
+		
+		Type* first(){ return (this->size > 0 ? &this->data[0] : nullptr); }
+		Type* last(){ return (this->size > 0 ? &this->data[this->size-1] : nullptr); }
 	};
-	
-	
 }
 #endif

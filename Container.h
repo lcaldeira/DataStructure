@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <string>
 #include <sstream>
+#include <cstdint>
 #include <type_traits>
 
 namespace TypeTraits
@@ -51,8 +52,38 @@ namespace DataStructure
 		virtual size_t getSize() const = 0;
 		virtual bool isEmpty() const { return !this->getSize(); }
 		virtual bool isAllocated() const = 0;
+		virtual bool contains(Type value, bool(*eqFunc)(Type&,Type&)) const = 0;
+		
+		bool compare(Container<Type>& c, bool(*eqFunc)(Type&,Type&)) const
+		{
+			size_t size = this->getSize();
+			if(size != c.getSize())
+				return false;
+			for(size_t i=0; i<size; i++)
+				if(!eqFunc(*this->at(i), *c.at(i)))
+					return false;
+			return true;
+		}
 
-		bool operator==(Container<Type>& c)
+		template<typename T=Type>
+		decltype(auto) compare(Container<T>& c) const 
+		{
+			size_t size = this->getSize();
+			if(size != c.getSize())
+				return false;
+			for(size_t i=0; i<size; i++)
+				if(*this->at(i) != *c.at(i))
+					return false;
+			return true;
+		}
+		
+		template<typename T=Type>
+		decltype(auto) operator==(Container<T>& c){ return compare(c); }
+		
+		template<typename T=Type>
+		decltype(auto) operator!=(Container<T>& c){ return !compare(c); }
+		
+		/*auto operator==(Container<T>& c) -> decltype(*this == 
 		{
 			//static_assert(std::is_fundamental<Type>::value, "Fundamental type required.");
 			size_t size = this->getSize();
@@ -64,19 +95,19 @@ namespace DataStructure
 			return true;
 		}
 		
-		bool operator!=(Container<Type>& c){ return !(this->operator==(c)); }
+		bool operator!=(Container<Type>& c){ return !(this->operator==(c)); }*/
 		
-		//conversão para texto
-		template<class T>
-		friend std::ostream& operator<<(std::ostream& ost, Container<T>& c);
-		
+		//conversão para texto		
 		virtual std::string strFormat(char c=' ') const { return "{-}"; }
 		operator std::string() const { return this->strFormat(); }
 		virtual void print(){ std::cout << (this->strFormat()) << '\n'; }
+		
+		template<class T>
+		friend std::ostream& operator<<(std::ostream& ost, Container<T>& c);
 	};
 
 	template<typename Type, template<typename> class TypeC, 
-		isBaseOf<Container<Type>,TypeC<Type>>* = nullptr>
+				isBaseOf<Container<Type>,TypeC<Type>>* = nullptr>
 	std::ostream& operator<<(std::ostream& ost, TypeC<Type>& c)
 	{
 		ost << c.strFormat();

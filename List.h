@@ -17,10 +17,7 @@ namespace DataStructure
 		Type value;
 		
 		Node<Type>(){ nxt = prv = nullptr; }
-		Node<Type>(Type v) : Node<Type>(){ value = v; }
-		
-		Node<Type>* next(){ return nxt; }
-		Node<Type>* prev(){ return prv; }
+		Node<Type>(Type value0) : Node<Type>(){ value = value0; }
 		
 		Node<Type> operator++()
 		{
@@ -37,6 +34,9 @@ namespace DataStructure
 			this->prv = prev()->prev();
 			return *this;
 		}
+		
+		Node<Type>* next(){ return nxt; }
+		Node<Type>* prev(){ return prv; }
 		
 		friend class List<Type>;
 	};
@@ -85,25 +85,30 @@ namespace DataStructure
 		bool isAllocated() const { return (this->head != nullptr || this->tail != nullptr); }
 		size_t getSize() const { return this->size; }
 		
-		void clear()
+		long int findNext(Type value, size_t idx, bool(*eqFunc)(Type&,Type&)) const 
 		{
-			Node<Type> *n0 = this->head->nxt, *n1;
-			while(n0 != this->head)
+			Node<Type> *n = this->nthNode(idx);
+			for(int i=0; i < this->size; i++)
 			{
-				n1 = n0->nxt;
-				delete n0;
-				n0 = n1;
+				if(eqFunc(n->value,value))
+					return i;
+				n = n->nxt;
 			}
-			this->head->nxt = this->head;
-			this->tail = this->head;
-			this->size = 0;
+			return -1;
 		}
 		
-		long int indexOf(Type value) const { return this->findNext(value,0); }
-
-		long int findNext(Type value, size_t i0) const 
+		template<typename T=Type>
+		auto contains(T value) const -> decltype(value == value, bool())
+		{ return (this->indexOf(value) >= 0); }
+		
+		template<typename T=Type>
+		auto indexOf(T value) const -> decltype(value == value, long())
+		{ return this->findNext(value,0); }
+		
+		template<typename T=Type>
+		auto findNext(T value, size_t idx) const -> decltype(value == value, long())
 		{
-			Node<Type> *n = this->nthNode(i0);
+			Node<Type> *n = this->nthNode(idx);
 			for(int i=0; i < this->size; i++)
 			{
 				if(n->value == value)
@@ -113,22 +118,21 @@ namespace DataStructure
 			return -1;
 		}
 		
-		Node<Type>* nthNode(long int index) const 
+		bool isBaseNode(Node<Type>* n) const { return (n == this->head); }
+		
+		Node<Type>* nthNode(long int idx) const 
 		{
-			//////////////////////////////
-			//std::cout << index << '\n';
-			//////////////////////////////
 			Node<Type> *n = this->head;
-			for(int i=0; i <= index; i++)
+			for(long int i=0; i <= idx; i++)
 				n = n->nxt;
 			return n;
 		}
 		
-		bool operator==(List<Type>& l)
+		template<typename T=Type>
+		decltype(auto) operator==(List<T>& l)
 		{
 			if(this->size != l.getSize())
 				return false;
-			
 			Node<Type> *n = this->head->nxt;
 			for(int i=0; i < this->size; i++)
 			{
@@ -139,10 +143,9 @@ namespace DataStructure
 			return true;
 		}
 		
-		bool operator!=(List<Type>& l)
-		{
-			return !(this->operator==(l));
-		}
+		template<typename T=Type>
+		decltype(auto) operator!=(List<Type>& l)
+		{ return !(this->operator==(l)); }
 
 		//acesso e manipulação
 		Type& operator[](size_t index) const { return this->nthNode(index)->value; }
@@ -183,40 +186,45 @@ namespace DataStructure
 		{
 			if(index1 >= this->size || index2 >= this->size || index1 == index2)
 				return;
-			
 			//next e prev do primeiro nó
 			Node<Type> *node1 = this->nthNode(index1);
 			Node<Type> *n1 = node1->next();
 			Node<Type> *p1 = node1->prev();
-			
 			//next e prev do segundo nó
 			Node<Type> *node2 = this->nthNode(index2);
 			Node<Type> *n2 = node2->next();
 			Node<Type> *p2 = node2->prev();
-			
-			//troca
+			//troca de endereços (parte 1)
 			node1->nxt = n2;
 			node1->prv = p2;
 			node2->nxt = n1;
 			node2->prv = p1;
-			
+			//troca de endereços (parte 2)
 			n1->prv = node2;
 			p1->nxt = node2;	
 			n2->prv = node1;
 			p2->nxt = node1;
 		}
-
-		void reverse()
+		
+		void clear()
 		{
-			for(size_t i=0; i < this->size/2; i++)
-				this->swap(i, this->size-i-1);
+			Node<Type> *n0 = this->head->nxt, *n1;
+			while(n0 != this->head)
+			{
+				n1 = n0->nxt;
+				delete n0;
+				n0 = n1;
+			}
+			this->head->nxt = this->head;
+			this->tail = this->head;
+			this->size = 0;
 		}
 		
 		//conversão para texto
 		template<typename T=Type, isPrintable<T>* = nullptr>
 		std::string strFormat(char c=' ') const 
 		{
-			Node<Type> *n = this->head->nxt;
+			Node<Type> *n = this->nthNode(0);
 			std::stringstream ss;
 			ss << "";
 			if(c == ' ')
