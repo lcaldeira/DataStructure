@@ -1,0 +1,7 @@
+[ok]	corrigir as funções de impressão
+[  ]	terminar de implementar os construtores por atribuição (hashset)
+[  ]	refletir sobre a hierarquia entre Vector/Stack e List/Queue
+[  ]	construir hashtable
+[	]	construir sparsematrix
+[	]	reconstruir graph com sparsematrix
+[	]	construir tree, binarytree, rbtree
