@@ -47,76 +47,48 @@ namespace DataStructure
 		
 		Vector<Type> operator=(Vector<Type> v)
 		{
-			/*this->~Vector<Type>();
+			this->~Vector<Type>();
 			this->size = v.getSize();
 			this->capacity = v.getCapacity();
 			this->data = new Type[this->capacity];
 			
 			for(int i=0; i < v.getSize(); i++)
 				data[i] = v[i];
-			return *this;*/
-			
-			if(this->capacity < v.getSize() || !isAllocated())
-			{
-				this->~Vector<Type>();
-				this->capacity = v.getCapacity();
-				this->data = new Type[this->capacity];
-			}
-			this->size = v.getSize();
-			
-			for(int i=0; i < this->size; i++)
-				data[i] = v[i];
 			return *this;
 		}
 
 		//busca e verificação
-		bool isAllocated() const { return this->data != nullptr; }
 		size_t getSize() const { return this->size; }
 		size_t getCapacity() const { return this->capacity; }
 		
-		long int findNext(Type value, size_t idx, bool(*eqFunc)(Type&,Type&)) const 
+		long int indexOf(Type value) const { return findNext(value,0); }
+		
+		long int findNext(Type value, size_t i0) const 
 		{
 			for(size_t i=0; i < this->size; i++)
-				if(eqFunc(this->data[(i+idx) % this->size], value))
-					return ((i+idx) % this->size);
+				if(this->data[(i+i0) % this->size] == value)
+					return ((i+i0) % this->size);
 			return -1;
 		}
 		
-		template<typename T=Type>
-		auto contains(T value) const -> decltype(value == value, bool())
-		{ return (this->indexOf(value) >= 0); }
-		
-		template<typename T=Type>
-		auto indexOf(T value) const -> decltype(value == value, long())
-		{ return this->findNext(value,0); }
-		
-		template<typename T=Type>
-		auto findNext(T value, size_t idx) const -> decltype(value == value, long())
-		{
-			for(size_t i=0; i < this->size; i++)
-				if(this->data[(i+idx) % this->size] == value)
-					return ((i+idx) % this->size);
-			return -1;
-		}
-		
-		template<typename T=Type>
-		decltype(auto) operator==(Vector<T>& v)
+		bool operator==(Vector<Type>& v)
 		{
 			size_t size = this->getSize();
 			if(size != v.getSize())
 				return false;
 			for(size_t i=0; i<size; i++)
-				if(this->data[i] != v[i])
+				if(this->data[i] != v.get(i))
 					return false;
 			return true;
 		}
 		
-		template<typename T=Type>
-		decltype(auto) operator!=(Vector<T>& v)
-		{ return !(this->operator==(v)); }
+		bool operator!=(Vector<Type>& v)
+		{
+			return !(this->operator==(v));
+		}
 
 		//acesso e manipulação
-		Type& operator[](size_t index) const { return this->data[index]; }
+		Type& operator[](size_t index){ return this->data[index]; }
 		
 		void insert(Type value, size_t index)
 		{
@@ -164,10 +136,17 @@ namespace DataStructure
 		
 		void shrink(){ this->resize(this->size); }
 		void clear(){ this->size = 0; }
+
+		void reverse()
+		{
+			size_t size = this->size;
+			for(size_t i=0; i < (size - size%2)/2; i++)
+				this->swap(i, size-i-1);
+		}
 		
 		//conversão para texto
-		template<typename T=Type, isPrintable<T>* = nullptr>
-		std::string strFormat(char c=' ') const 
+		template<typename T=Type, isFundamental<T>* = nullptr>
+		std::string strFormat(char c=' ')
 		{
 			std::stringstream ss;
 			if(c == ' ')
@@ -187,10 +166,10 @@ namespace DataStructure
 			return ss.str();
 		}
 		
-		template<typename T=Type, isntPrintable<T>* = nullptr>
-		std::string strFormat(char c=' ') const { return Container<Type>::strFormat(c); }
+		template<typename T=Type, isntFundamental<T>* = nullptr>
+		std::string strFormat(char c=' '){ return Container<Type>::strFormat(c); }
 		
-		operator std::string() const { return this->strFormat(); }
+		operator std::string(){ return this->strFormat(); }
 		virtual void print(){ std::cout << (this->strFormat()) << '\n'; }
 	};
 }

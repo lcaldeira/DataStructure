@@ -20,16 +20,16 @@ namespace DataStructure
 	}
 	
 	template<typename Type>
-	void shuffle(Sequence<Type> *s, size_t intensity = 50)
+	void shuffle(Sequence<Type> *s, int intensity = 50)
 	{
+		randomSeed();
 		intensity = abs(intensity) % 100;
-		size_t i, j, size = s->getSize();
-		int qt_swaps = size * intensity/100.0;
-		
+		int qt_swaps = s->getSize() * intensity/100.0;
+		unsigned int i, j;
 		for(int cont = 0; cont < qt_swaps; cont++)
 		{
-			i = randomNum(0, size-1);
-			j = randomNum(0, size-1);
+			i = (unsigned int) randomNum(0, (s->getSize()-1));
+			j = (unsigned int) randomNum(0, (s->getSize()-1));
 			if(i != j)
 				s->swap(i,j);
 			else
