@@ -49,25 +49,45 @@ namespace DataStructure
 		bool isAllocated() const { return true; }
 		size_t getSize() const { return N; }
 		
-		long int indexOf(Type value) const { return findNext(value,0); }
-		
-		long int findNext(Type value, size_t index0) const 
+		long int findNext(Type value, size_t idx, bool(*eqFunc)(Type&,Type&)) const 
 		{
 			for(size_t i=0; i<N; i++)
-				if((Type) this->data[(i+index0) % N] == value)
-					return ((i+index0) % N);
+				if(eqFunc((Type&) this->data[(i+idx) % N], value))
+					return ((i+idx) % N);
 			return -1;
 		}
 		
-		bool operator==(Tuple<Type,N>& t)
+		template<typename T=Type>
+		auto contains(T value) const -> decltype(value == value, bool())
+		{ return (this->indexOf(value) >= 0); }
+		
+		template<typename T=Type>
+		auto indexOf(T value) const -> decltype(value == value, long())
+		{ return this->findNext(value,0); }
+		
+		template<typename T=Type>
+		auto findNext(T value, size_t idx) const -> decltype(value == value, long())
 		{
+			for(size_t i=0; i < N; i++)
+				if(this->data[(i+idx) % N] == value)
+					return ((i+idx) % N);
+			return -1;
+		}
+		
+		template<typename T=Type, size_t M>
+		decltype(auto) operator==(Tuple<T,M>& t)
+		{
+			if(N != M)
+				return false;
 			for(size_t i=0; i<N; i++)
 				if(this->data[i] != t[i])
 					return false;
 			return true;
 		}
 		
-		bool operator!=(Tuple<Type,N>& t){ return !(this->operator==(t)); }
+		template<typename T=Type, size_t M>
+		decltype(auto) operator!=(Tuple<T,M>& t)
+		{ return !(this->operator==(t)); }
 
 		//acesso e manipulação
 		Type& operator[](size_t index) const { return (Type&) this->data[index]; }
