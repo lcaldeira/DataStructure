@@ -14,34 +14,22 @@ namespace DataStructure
 		
 		//função-hash padrão
 		template<typename T=Type, isFundamental<T>* = nullptr>
-		static size_t getHash(Type value, size_t size)
+		static size_t defaultgetHash(Type value, size_t size)
 		{
 			return size_t(value) % size;
 		}
 		
-		/*template<typename T=Type, isntFundamental<T>* = nullptr>
-		size_t getHash(Type value)
-		{
-			size_t size = sizeof(Type) * 1;
-			char *ptr = (char*) &value;
-			size_t hash = 0;
-			
-			for(int i=0; i < size; i++)
-				hash += (size_t) *(ptr+i);
-			return (hash) % this->data.getSize();
-		}*/
-		
 		Type* at(size_t index) const { return nullptr; }
 		
 	public:
-		size_t (*hashFunc)(Type, size_t);
+		size_t (*getHash)(Type, size_t);
 		
 		//construtor e destrutor		
 		template<typename T=Type, isFundamental<T>* = nullptr>
 		HashSet<Type>(size_t init_cap = 16)
 		{
 			this->data = Vector<List<Type>>(init_cap);
-			this->hashFunc = getHash;
+			this->getHash = defaultgetHash;
 			for(size_t i=0; i<init_cap; i++)
 				this->data.pushBack(List<Type>());
 		}
@@ -50,7 +38,7 @@ namespace DataStructure
 		HashSet<Type>(size_t init_cap = 16)
 		{
 			this->data = Vector<List<Type>>(init_cap);
-			this->hashFunc = nullptr;
+			this->getHash = nullptr;
 			for(size_t i=0; i<init_cap; i++)
 				this->data.pushBack(List<Type>());
 		}
@@ -65,7 +53,7 @@ namespace DataStructure
 			return *this;
 		}*/
 		
-		HashSet<Type> operator=(HashSet<Type> hs)
+		HashSet<Type>& operator=(const HashSet<Type>& hs)
 		{
 			List<Type> l = hs.toList();
 			this->clear();
@@ -80,8 +68,8 @@ namespace DataStructure
 		
 		bool contains(Type value) const
 		{
-			size_t hash = hashFunc(value,this->getHeight());
-			return this->data[hash].contains(value);
+			size_t hash = getHash(value,this->getHeight());
+			return (this->data[hash].indexOf(value) != ~0);
 		}
 		
 		size_t getSize() const 
@@ -93,47 +81,80 @@ namespace DataStructure
 		}
 		
 		size_t getHeight() const { return this->data.getSize(); }
-		
 		float avgCharge() const { return this->getSize() / (float)this->getHeight(); }
-
+		
+		template<typename T=Type>
+		decltype(auto) operator==(HashSet<T>& hs)
+		{
+			Vector<Type> v1 = this->toVector();
+			Vector<Type> v2 = hs.toVector();
+			size_t sz = v1.getSize();
+			
+			if(sz != v2.getSize())
+				return false;
+			for(size_t i = 0; i < sz; i++)
+				if(!v2.contains(v1[i]))
+					return false;
+			return true;
+		}
+		
+		template<typename T=Type>
+		decltype(auto) operator!=(HashSet<T>& hs)
+		{ return !(this->operator==(hs)); }
+		
 		/*template<class T>
 		friend bool operator==(HashSet<T>& hs1, HashSet<T>& hs2);
 		
 		template<class T>
 		friend bool operator!=(HashSet<T>& hs1, HashSet<T>& hs2);*/
 		
+		
+		/*template<typename T=Type>
+		decltype(auto) operator==(HashSet<T>& hs)
+		{
+			size_t size = this->getSize();
+			if(size != v.getSize())
+				return false;
+			for(size_t i=0; i<size; i++)
+				if(this->data[i] != v[i])
+					return false;
+			return true;
+		}*/	
+		
 		//acesso e manipulação
 		void add(Type value)
 		{
-			size_t hash = this->hashFunc(value, this->getHeight());
+			size_t hash = this->getHash(value, this->getHeight());
 			if(!this->data[hash].contains(value))
 				this->data[hash].pushBack(value);
 		}
 		
 		void remove(Type value)
 		{
-			size_t hash = this->hashFunc(value, this->getHeight());
-			long int index = this->data[hash].indexOf(value);
-			if(index >= 0)
+			size_t hash = this->getHash(value, this->getHeight());
+			size_t index = this->data[hash].indexOf(value);
+			if(index != ~0)
 				this->data[hash].erase(index);
 		}
 		
-		void reHash()
+		void resize(size_t new_height)
 		{
-			if(this->isEmpty())
+			if(this->isEmpty() || !new_height)
 				return;
 			List<Type> l = this->toList();
 			this->clear();
-			this->data.resize(l.getSize());
-			while(this->getHeight() < l.getSize())
+			this->data.resize(new_height);
+			while(this->getHeight() < new_height)
 				this->data.pushBack(List<Type>());
 			while(!l.isEmpty())
 				this->add(l.popFront());
 		}
 		
+		void rebalance(){ this->resize(this->getSize() * 1.5); }
+		
 		void clear()
 		{
-			for(size_t i=0; i<this->data.getSize(); i++)
+			for(size_t i=0; i < this->data.getSize(); i++)
 				this->data[i].clear();
 		}
 		

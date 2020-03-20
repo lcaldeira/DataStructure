@@ -10,12 +10,9 @@ namespace DataStructure
 	{
 	public:
 		//busca e verificação
-		virtual long int findNext(Type value, size_t idx, bool(*eqFunc)(Type&,Type&)) const = 0;
-		
-		virtual long int indexOf(Type value, bool(*eqFunc)(Type&,Type&)) const { return findNext(value,0,eqFunc); }
-		
-		virtual bool contains(Type value, bool(*eqFunc)(Type&,Type&)) const
-		{ return (indexOf(value,eqFunc) >= 0); }
+		virtual size_t findNext(Type value, size_t idx) const = 0;
+		virtual size_t indexOf(Type value) const { return findNext(value,0); }
+		virtual bool contains(Type value) const { return ~indexOf(value); }
 		
 		//acesso e manipulação
 		virtual Type& operator[](size_t index) const = 0;

@@ -3,22 +3,22 @@
 #include "Container.h"
 #include "Sequence.h"
 //basic containers
-#include "Tuple.h"		//ok
+//#include "Tuple.h"		//ok
 #include "Vector.h"		//ok
 #include "List.h"			//ok
 #include "Matrix.h"		//ok
 //derived containers
 #include "Stack.h"		//ok
 #include "Queue.h"		//ok
-#include "Set.h"			//corrigir o operator=()
+#include "Set.h"			//ok
 //compound containers
-//#include "HashSet.h"		//alterar o indexOf, at, get e set, adicionar o rehash
+#include "HashSet.h"		//ok
 //#include "HashTable.h"
 //#include "SparseMatrix.h"
 //#include "Tree.h"
-//#include "Graph.h"		//generalizar as estruturas de dados usadas
+#include "Graph.h"		//generalizar as estruturas de dados usadas
 //#include "SimpleGraph.h"	//escrever em função de Graph
-//utilidades
+//utilities
 #include "Sorting.h"
 
 using namespace std;
@@ -30,7 +30,7 @@ void test_1p1();
 void test_1p2();
 void test_2p1();
 
-Tuple<int,3> tpl;
+//Tuple<int,3> tpl;
 Vector<int> vct;
 List<int> lst;
 Matrix<int> mtx;
@@ -40,9 +40,9 @@ Queue<int> que;
 Set<char,Vector> st1;
 Set<char,List> st2;
 
-//HashSet<int> hst;
-/*Graph<char,int> gph;
-SimpleGraph<char> sgh;*/
+HashSet<int> hst;
+SimpleGraph<char> sgh;
+//Graph<char,int> gph;
 
 int main()
 {
@@ -54,11 +54,13 @@ int main()
 	cout << ":" << vll.contains(1) << "\n";
 	vll.print();*/
 	
-	test_1p1();
-	test_1p2();
-	//test_2p1();
+	randomSeed();
 	
-	cout << "\nOkay!\n";
+	//test_1p1();
+	//test_1p2();
+	test_2p1();
+	
+	cout << "\nOkay!\n\n";
 	return 0;
 }
 
@@ -67,7 +69,7 @@ void test_1p1()
 	int k=1;
 	int array[] = {1,2,3};
 	
-	tpl = Tuple<int,3>(array);
+	//tpl = Tuple<int,3>(array);
 	vct = Vector<int>(16);
 	lst = List<int>();
 	mtx = Matrix<int>(3,3);
@@ -91,9 +93,9 @@ void test_1p1()
 		st2.add('a'+2*i);
 	}
 	
-	cout << "<<TUPLE>>\n";
-	tpl.reverse();
-	tpl.print();
+	//cout << "<<TUPLE>>\n";
+	//tpl.reverse();
+	//tpl.print();
 	
 	cout << "\n<<VECTOR>>\n";
 	vct.reverse();
@@ -103,13 +105,18 @@ void test_1p1()
 	vct.print();
 	shuffle(&vct);
 	vct.print();
+	quickSort(&vct);
+	vct.print();
 	
 	cout << "\n<<LIST>>\n";
+	lst.print();
 	lst.swap(1,7);
+	lst.print();
+	quickSort(&lst);
 	lst.print();
 
 	cout << "\n<<MATRIX>>\n";
-	cout << mtx.strFormat() << "\n\n";
+	cout << mtx.strFormat() << "\n";
 	
 	cout << "\n<<STACK>>\n";	
 	stk.pop();
@@ -127,29 +134,29 @@ void test_1p1()
 	(st1+st2).print();
 	(st1-st2).print();
 	(st1^st2).print();
-	st1.intersecWith(st2);
-	//st1.print();
 	st1 = st2;
-	//st1.print();
+	st1.print();
 }
 
 void test_1p2()
 {
-	cout << "\n";
-	auto vx = Vector<string>(4);
-	vx.pushBack("str_0");
-	vx.pushBack("str_1");
-	vx.pushBack("str_2");
-	vx.pushBack("str_3");
+	cout << "\n<<VECTOR OF INTS>>\n";
+	auto vx = Vector<int>(4);
+	vx.pushBack(0);
+	vx.pushBack(1);
+	vx.pushBack(0);
+	vx.pushBack(1);
 	vx.print();
 	
-	auto vy = Vector<int>(4);
-	vy.pushBack(0);
-	vy.pushBack(1);
-	vy.pushBack(0);
-	vy.pushBack(1);
+	cout << "\n<<VECTOR OF STRINGS>>\n";
+	auto vy = Vector<string>(4);
+	vy.pushBack("str_0");
+	vy.pushBack("str_1");
+	vy.pushBack("str_2");
+	vy.pushBack("str_3");
 	vy.print();
 	
+	cout << "\n<<VECTOR OF VECTORS>>\n";
 	auto vz = Vector<Vector<int>>(2);
 	vz.pushBack(Vector<int>(2));
 	vz[0].pushBack(0);
@@ -162,31 +169,31 @@ void test_1p2()
 	vz[2].pushBack(21);
 	vz.print();
 	
-	auto vvz = Vector<Vector<Vector<int>>>(2);
-	vvz.pushBack(Vector<Vector<int>>(3));
-		vvz[0].pushBack(Vector<int>(3));
-			vvz[0][0].pushBack(0);
-			vvz[0][0].pushBack(1);
-		vvz[0].pushBack(Vector<int>(3));
-			vvz[0][1].pushBack(2);
-			vvz[0][1].pushBack(3);
-	vvz.pushBack(Vector<Vector<int>>(3));
-		vvz[1].pushBack(Vector<int>(3));
-			vvz[1][0].pushBack(0);
-			vvz[1][0].pushBack(1);
-		vvz[1].pushBack(Vector<int>(3));
-			vvz[1][1].pushBack(2);
-			vvz[1][1].pushBack(3);
-	cout << ": " << vvz.strFormat() << "\n";
+	cout << "\n<<VECTOR OF VECTORS OF VECTORS>>\n";
+	auto vw = Vector<Vector<Vector<int>>>(2);
+	vw.pushBack(Vector<Vector<int>>(3));
+		vw[0].pushBack(Vector<int>(3));
+			vw[0][0].pushBack(0);
+			vw[0][0].pushBack(1);
+		vw[0].pushBack(Vector<int>(3));
+			vw[0][1].pushBack(2);
+			vw[0][1].pushBack(3);
+	vw.pushBack(Vector<Vector<int>>(3));
+		vw[1].pushBack(Vector<int>(3));
+			vw[1][0].pushBack(0);
+			vw[1][0].pushBack(1);
+		vw[1].pushBack(Vector<int>(3));
+			vw[1][1].pushBack(2);
+			vw[1][1].pushBack(3);
+	cout << vw << "\n";
 	
+	cout << "\n<<SETS INITIALIZATION>>\n";
 	auto sx = Set<int,Vector>(4);
-	sx = vy;
+	sx = vx;
 	sx.print();
 	
-	Set<int,Vector> sy = vy;
+	Set<int,Vector> sy = vx;
 	sy.print();
-	
-	cout << vz << "\n";
 	
 	//auto vt = Tuple<Tuple<int,2>,2>(3);
 	
@@ -200,34 +207,40 @@ void test_1p2()
 
 void test_2p1()
 {
-	/*hst = HashSet<int>(5);
-	gph = Graph<char,int>(4);
-	sgh = SimpleGraph<char>(4);*/
+	hst = HashSet<int>(5);
+	sgh = SimpleGraph<char>(4);
+	//gph = Graph<char,int>(4);
 	
-	for(int i=0; i<9; i++)
+	for(int i=0; i<8; i++)
 	{
-		/*hst.add(i);
+		hst.add(i);
 		hst.add(7*i);
 		
-		gph.insertVertex('A'+i);
-		sgh.insertVertex('A'+i);*/
+		sgh.addVertex('A'+i);
+		/*gph.insertVertex('A'+i);*/
 	}
 	
-	/*cout << "\n<<HASH-SET>>\n";
+	cout << "\n<<HASH-SET>>\n";
 	hst.print();
-	hst.reHash();
-	hst.print();
+	//hst.rebalance();
+	//hst.print();
+	//hst.resize(3);
+	//hst.print();
 	cout << "\n";
 	
-	gph.insertEdge('F','B',1);
+	/*gph.insertEdge('F','B',1);
 	gph.insertEdge('C','B',3);
 	gph.insertEdge('D','H',2);
-	//gph.print();
+	//gph.print();*/
 	
-	sgh.insertEdge('F','B');
-	sgh.insertEdge('C','B');
-	sgh.insertEdge('D','H');
+	sgh.addEdge('F','B');
+	sgh.addEdge('C','B');
+	sgh.addEdge('D','H');
+	sgh.addEdge('A','E');
+	sgh.addEdge('A','G');
+	sgh.addEdge('A','C');
 	sgh.print();
 	sgh.removeVertex('B');
-	sgh.print();*/
+	sgh.removeEdge('E','A');
+	sgh.print();
 }

@@ -1,6 +1,6 @@
 [ok]	corrigir as funções de impressão
-[  ]	terminar de implementar os construtores por atribuição (hashset)
-[  ]	refletir sobre a hierarquia entre Vector/Stack e List/Queue
+[ok]	terminar de implementar os construtores por atribuição (hashset)
+[ok]	refletir sobre a hierarquia entre Vector/Stack e List/Queue
 [  ]	construir hashtable
 [	]	construir sparsematrix
 [	]	reconstruir graph com sparsematrix

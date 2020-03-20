@@ -45,7 +45,7 @@ namespace DataStructure
 			}
 		}
 		
-		Vector<Type> operator=(Vector<Type> v)
+		Vector<Type>& operator=(const Vector<Type>& v)
 		{
 			/*this->~Vector<Type>();
 			this->size = v.getSize();
@@ -74,29 +74,15 @@ namespace DataStructure
 		size_t getSize() const { return this->size; }
 		size_t getCapacity() const { return this->capacity; }
 		
-		long int findNext(Type value, size_t idx, bool(*eqFunc)(Type&,Type&)) const 
+		size_t findNext(Type value, size_t idx) const
 		{
-			for(size_t i=0; i < this->size; i++)
-				if(eqFunc(this->data[(i+idx) % this->size], value))
-					return ((i+idx) % this->size);
-			return -1;
-		}
-		
-		template<typename T=Type>
-		auto contains(T value) const -> decltype(value == value, bool())
-		{ return (this->indexOf(value) >= 0); }
-		
-		template<typename T=Type>
-		auto indexOf(T value) const -> decltype(value == value, long())
-		{ return this->findNext(value,0); }
-		
-		template<typename T=Type>
-		auto findNext(T value, size_t idx) const -> decltype(value == value, long())
-		{
-			for(size_t i=0; i < this->size; i++)
-				if(this->data[(i+idx) % this->size] == value)
-					return ((i+idx) % this->size);
-			return -1;
+			for(size_t i=idx; i < this->size; i++)
+				if(this->data[i] == value)
+					return i;
+			for(size_t i=0; i < idx; i++)
+				if(this->data[i] == value)
+					return i;
+			return ~0;
 		}
 		
 		template<typename T=Type>

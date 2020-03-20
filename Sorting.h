@@ -24,16 +24,17 @@ namespace DataStructure
 	{
 		intensity = abs(intensity) % 100;
 		size_t i, j, size = s->getSize();
-		int qt_swaps = size * intensity/100.0;
+		int qt_swaps = (size * intensity)/100.0;
 		
 		for(int cont = 0; cont < qt_swaps; cont++)
 		{
-			i = randomNum(0, size-1);
-			j = randomNum(0, size-1);
-			if(i != j)
-				s->swap(i,j);
-			else
-				cont--;
+			do
+			{
+				i = randomNum(0, size-1);
+				j = randomNum(0, size-1);
+			}
+			while(i == j);
+			s->swap(i,j);
 		}
 	}
 	
@@ -56,6 +57,38 @@ namespace DataStructure
 			if(flag)
 				break;
 		}
+	}
+	
+	template<typename Type>
+	void quickSort(Sequence<Type> *s, size_t a = 0, size_t b = ~0)
+	{
+		if(s->getSize() <= 1 || b <= a)
+			return;
+		else if(b == ~0)
+			b = s->getSize()-1;
+		
+		size_t pivot=b, i=a, j=b-1;
+		
+		//particionamento do vetor
+		while(i < j)
+		{
+			while(s->get(i) < s->get(pivot) && i<j)
+				i++;
+			while(s->get(j) > s->get(pivot) && j>i)
+				j--;
+			if(i==j)
+				break;
+			s->swap(i,j);
+			i++;
+		}
+		//reposicionamento do pivô
+		if(s->get(j) < s->get(pivot))
+			j++;
+		s->swap(j,pivot);
+		pivot = j;
+		//chamadas recursiva nos particionamentos
+		quickSort(s,a,pivot-1);
+		quickSort(s,pivot+1,b);
 	}
 }
 #endif

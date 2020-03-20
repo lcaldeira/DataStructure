@@ -38,6 +38,8 @@ namespace TypeTraits
 		!std::is_assignable<Type,std::string>::value>;
 }
 
+
+
 namespace DataStructure
 {
 	using namespace TypeTraits;
@@ -52,21 +54,10 @@ namespace DataStructure
 		virtual size_t getSize() const = 0;
 		virtual bool isEmpty() const { return !this->getSize(); }
 		virtual bool isAllocated() const = 0;
-		virtual bool contains(Type value, bool(*eqFunc)(Type&,Type&)) const = 0;
+		virtual bool contains(Type value) const = 0;
 		
-		bool compare(Container<Type>& c, bool(*eqFunc)(Type&,Type&)) const
-		{
-			size_t size = this->getSize();
-			if(size != c.getSize())
-				return false;
-			for(size_t i=0; i<size; i++)
-				if(!eqFunc(*this->at(i), *c.at(i)))
-					return false;
-			return true;
-		}
-
 		template<typename T=Type>
-		decltype(auto) compare(Container<T>& c) const 
+		decltype(auto) operator==(Container<T>& c)
 		{
 			size_t size = this->getSize();
 			if(size != c.getSize())
@@ -78,10 +69,8 @@ namespace DataStructure
 		}
 		
 		template<typename T=Type>
-		decltype(auto) operator==(Container<T>& c){ return compare(c); }
-		
-		template<typename T=Type>
-		decltype(auto) operator!=(Container<T>& c){ return !compare(c); }
+		decltype(auto) operator!=(Container<T>& c)
+		{ return !(this->operator==(c)); }
 		
 		/*auto operator==(Container<T>& c) -> decltype(*this == 
 		{

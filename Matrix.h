@@ -57,7 +57,7 @@ namespace DataStructure
 			}
 		}
 		
-		Matrix<Type> operator=(Matrix<Type> M)
+		Matrix<Type>& operator=(const Matrix<Type>& M)
 		{
 			this->~Matrix<Type>();
 			this->m = M.qtLines();
@@ -79,11 +79,11 @@ namespace DataStructure
 		size_t qtLines() const { return this->m; }
 		size_t qtColumns() const { return this->n; }
 		
-		bool contains(Type value, bool(*eqFunc)(Type&,Type&)) const
+		bool contains(Type value) const
 		{
 			for(int i=0; i<m; i++)
 				for(int j=0; j<n; j++)
-					if(eqFunc(this->data[i][j],value))
+					if(this->data[i][j] == value)
 						return true;
 			return false;
 		}
@@ -133,7 +133,7 @@ namespace DataStructure
 		
 		//conversão para texto
 		template<typename T=Type, isPrintable<T>* = nullptr>
-		std::string strFormat(char c=' ')
+		std::string strFormat(char c=' ') const 
 		{
 			std::stringstream ss;
 			switch(c)
@@ -166,9 +166,9 @@ namespace DataStructure
 		}
 		
 		template<typename T=Type, isntPrintable<T>* = nullptr>
-		std::string strFormat(char c=' '){ return "[]"; }
+		std::string strFormat(char c=' ') const { return "[]"; }
 		
-		operator std::string(){ return this->strFormat(); }
+		operator std::string() const { return this->strFormat(); }
 		virtual void print(){ std::cout << (this->strFormat()) << '\n'; }
 		
 		//matemático

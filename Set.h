@@ -38,7 +38,7 @@ namespace DataStructure
 			return (*this);
 		}
 		
-		Set<Type,TypeC>& operator=(TypeC<Type> s)
+		Set<Type,TypeC>& operator=(const TypeC<Type>& s)
 		{
 			this->clear();
 			for(int i=0; i < s.getSize(); i++)
@@ -52,34 +52,11 @@ namespace DataStructure
 		bool isAllocated() const { return TypeC<Type>::isAllocated(); }
 		bool isEmpty() const { return TypeC<Type>::isEmpty(); }
 		size_t getSize() const { return TypeC<Type>::getSize(); }
-		
-		long int indexOf(Type value, bool(*eqFunc)(Type&,Type&)) const 
-		{ return Sequence<Type>::indexOf(value,eqFunc); }
-		
-		bool contains(Type value, bool(*eqFunc)(Type&,Type&)) const 
-		{ return Sequence<Type>::contains(value,eqFunc); }
-		
-		bool compare(Set<Type>& s, bool(*eqFunc)(Type&,Type&)) const 
-		{
-			size_t size = this->getSize();
-			if(size != s.getSize())
-				return false;
-			for(size_t i=0; i<size; i++)
-				if(!s.contains(this->get(i),eqFunc))
-					return false;
-			return true;
-		}
+		size_t indexOf(Type value) const { return TypeC<Type>::indexOf(value); }
+		bool contains(Type value) const { return TypeC<Type>::contains(value); }
 		
 		template<typename T=Type>
-		auto indexOf(T value) const -> decltype(value == value, long())
-		{ return TypeC<Type>::indexOf(value); }
-		
-		template<typename T=Type>
-		auto contains(T value) const -> decltype(value == value, bool())
-		{ return TypeC<Type>::contains(value); }
-
-		template<typename T=Type>
-		decltype(auto) compare(Set<T>& s) const 
+		decltype(auto) operator==(Set<T>& s)
 		{
 			size_t size = this->getSize();
 			if(size != s.getSize())
@@ -91,18 +68,16 @@ namespace DataStructure
 		}
 		
 		template<typename T=Type>
-		decltype(auto) operator==(Set<T>& s){ return compare(s); }
-		
-		template<typename T=Type>
-		decltype(auto) operator!=(Set<T>& s){ return !compare(s); }
+		decltype(auto) operator!=(Set<T>& s)
+		{ return !(this->operator==(s)); }
 		
 		//acesso e manipulação
 		Type get(size_t index) const { return TypeC<Type>::get(index); }
 		
 		void set(Type value, size_t index)
 		{
-			long int idx = this->indexOf(value);
-			if(idx < 0)
+			size_t idx = this->indexOf(value);
+			if(idx == ~0)
 				TypeC<Type>::insert(value,index);
 			else
 				TypeC<Type>::swap(index,idx);

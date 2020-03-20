@@ -17,23 +17,7 @@ namespace DataStructure
 		Type value;
 		
 		Node<Type>(){ nxt = prv = nullptr; }
-		Node<Type>(Type value0) : Node<Type>(){ value = value0; }
-		
-		Node<Type> operator++()
-		{
-			this->value = next()->value;
-			this->prv = next()->prev();
-			this->nxt = next()->next();
-			return *this;
-		}
-		
-		Node<Type> operator--()
-		{
-			this->value = prev()->value;
-			this->nxt = prev()->next();
-			this->prv = prev()->prev();
-			return *this;
-		}
+		Node<Type>(Type val) : Node<Type>(){ value = val; }
 		
 		Node<Type>* next(){ return nxt; }
 		Node<Type>* prev(){ return prv; }
@@ -73,7 +57,7 @@ namespace DataStructure
 				delete this->head;
 		}
 		
-		List<Type> operator=(List<Type> l)
+		List<Type>& operator=(const List<Type>& l)
 		{
 			this->clear();
 			for(int i=0; i < l.getSize(); i++)
@@ -85,28 +69,7 @@ namespace DataStructure
 		bool isAllocated() const { return (this->head != nullptr || this->tail != nullptr); }
 		size_t getSize() const { return this->size; }
 		
-		long int findNext(Type value, size_t idx, bool(*eqFunc)(Type&,Type&)) const 
-		{
-			Node<Type> *n = this->nthNode(idx);
-			for(int i=0; i < this->size; i++)
-			{
-				if(eqFunc(n->value,value))
-					return i;
-				n = n->nxt;
-			}
-			return -1;
-		}
-		
-		template<typename T=Type>
-		auto contains(T value) const -> decltype(value == value, bool())
-		{ return (this->indexOf(value) >= 0); }
-		
-		template<typename T=Type>
-		auto indexOf(T value) const -> decltype(value == value, long())
-		{ return this->findNext(value,0); }
-		
-		template<typename T=Type>
-		auto findNext(T value, size_t idx) const -> decltype(value == value, long())
+		size_t findNext(Type value, size_t idx) const 
 		{
 			Node<Type> *n = this->nthNode(idx);
 			for(int i=0; i < this->size; i++)
@@ -115,16 +78,19 @@ namespace DataStructure
 					return i;
 				n = n->nxt;
 			}
-			return -1;
+			return ~0;
 		}
 		
 		bool isBaseNode(Node<Type>* n) const { return (n == this->head); }
 		
-		Node<Type>* nthNode(long int idx) const 
+		Node<Type>* nthNode(size_t idx) const 
 		{
-			Node<Type> *n = this->head;
-			for(long int i=0; i <= idx; i++)
+			Node<Type> *n = this->head; //ponteiro para o nó-cabeça (anterior ao nó 0)
+			while(idx != ~0)
+			{
 				n = n->nxt;
+				idx--;
+			}
 			return n;
 		}
 		
@@ -164,9 +130,10 @@ namespace DataStructure
 		}
 
 		Type erase(size_t index)
-		{	
+		{
 			Node<Type> *n0 = this->nthNode(index-1);
 			Node<Type> *n1 = n0->nxt;
+			
 			n0->nxt = n1->nxt;
 			n1->nxt->prv = n0;
 
