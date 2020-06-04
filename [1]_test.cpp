@@ -222,10 +222,10 @@ void test_2p1()
 	
 	cout << "\n<<HASH-SET>>\n";
 	hst.print();
-	//hst.rebalance();
-	//hst.print();
-	//hst.resize(3);
-	//hst.print();
+	hst.rebalance();
+	hst.print();
+	hst.resize(3);
+	hst.print();
 	cout << "\n";
 	
 	/*gph.insertEdge('F','B',1);
@@ -233,6 +233,8 @@ void test_2p1()
 	gph.insertEdge('D','H',2);
 	//gph.print();*/
 	
+	
+	cout << "\n<<SIMPLE GRAPH>>\n";
 	sgh.addEdge('F','B');
 	sgh.addEdge('C','B');
 	sgh.addEdge('D','H');
