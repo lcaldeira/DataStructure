@@ -19,6 +19,8 @@ namespace DataStructure
 		
 		virtual Type get(size_t index) const { return *this->at(index); }
 		virtual void set(Type value, size_t index){ *this->at(index) = value; }
+		virtual void insert(Type value, size_t index) = 0;
+		virtual Type erase(size_t index) = 0;
 		
 		virtual void swap(size_t index1, size_t index2)
 		{
@@ -34,10 +36,9 @@ namespace DataStructure
 				this->swap(i, size-i-1);
 		}
 		
-		virtual void insert(Type value, size_t index) = 0;
-		virtual Type erase(size_t index) = 0;
 		virtual void clear() = 0;
 		
+		//virtual void replace(Type v_old, Type v_new) = 0;
 		//virtual void remove(Type value) = 0;
 		//virtual void splice() = 0;
 		//virtual void count() = 0;

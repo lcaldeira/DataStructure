@@ -6,43 +6,16 @@
 #include <string>
 #include <sstream>
 #include <cstdint>
-#include <type_traits>
+#include <initializer_list>
 
-namespace TypeTraits
-{
-	template<typename Type>
-	using isFundamental = std::enable_if_t<std::is_fundamental<Type>::value>;
-	
-	template<typename Type>
-	using isntFundamental = std::enable_if_t<!std::is_fundamental<Type>::value>;
-	
-	template<class Base, class Derived>
-	using isBaseOf = std::enable_if_t<std::is_base_of<Base, Derived>::value>;
-	
-	template<class TypeA, class TypeB>
-	using isConvertible = std::enable_if_t<std::is_convertible<TypeA,TypeB>::value>;
-	
-	template<class TypeA, class TypeB>
-	using isntConvertible = std::enable_if_t<!std::is_convertible<TypeA,TypeB>::value>;
-	
-	template<class Type>
-	using isPrintable = std::enable_if_t<
-		std::is_fundamental<Type>::value || 
-		std::is_convertible<Type,std::string>::value || 
-		std::is_assignable<Type,std::string>::value>;
-	
-	template<class Type>
-	using isntPrintable = std::enable_if_t<
-		!std::is_fundamental<Type>::value && 
-		!std::is_convertible<Type,std::string>::value && 
-		!std::is_assignable<Type,std::string>::value>;
-}
-
-
+#include "../Utilities/TypeTraits.h"
 
 namespace DataStructure
 {
 	using namespace TypeTraits;
+	
+	template<typename Type>
+	using init_list = std::initializer_list<Type>;
 	
 	template<typename Type>
 	class Container
@@ -50,6 +23,16 @@ namespace DataStructure
 	protected:
 		virtual Type* at(size_t index) const = 0;
 	public:
+		//construtor e destrutor (modelos)
+		/*
+			Class() {}	// default constructor
+			Class(Args ...) {}	// parameterized constructor
+			Class(const Class& C) {} // copy constructor
+			Class& operator=(const Class& C) {} // copy assignment
+			friend Class& operator&=(Class& C1, Class& C2) {} // reference assignment
+			~Class() {} // destructor
+		*/
+		
 		//busca e verificação
 		virtual size_t getSize() const = 0;
 		virtual bool isEmpty() const { return !this->getSize(); }

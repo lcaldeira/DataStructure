@@ -22,11 +22,11 @@ namespace DataStructure
 			size = capacity = 0;
 		}
 		
-		Vector<Type>(size_t init_cap)
+		Vector<Type>(size_t init_cap, size_t init_siz=0)
 		{
-			this->capacity = (init_cap > 0 ? init_cap : 10);
+			this->capacity = (init_cap > 0 ? init_cap : 16);
+			this->size = (init_siz <= this->capacity ? init_siz : this->capacity);
 			this->data = new Type[this->capacity];
-			this->size = 0;
 		}
 		
 		Vector<Type>(const Vector<Type>& v) : Vector<Type>(v.getCapacity())
@@ -67,6 +67,18 @@ namespace DataStructure
 			for(int i=0; i < this->size; i++)
 				data[i] = v[i];
 			return *this;
+		}
+		
+		friend Vector<Type>& operator&=(Vector<Type>& v, Vector<Type>& w)
+		{
+			if(&v != &w)
+			{
+				v.~Vector<Type>();
+				v.capacity &= w.capacity;
+				v.size &= w.size;
+				v.data = w.data;
+			}
+			return v;
 		}
 
 		//busca e verificação
@@ -133,6 +145,12 @@ namespace DataStructure
 		Type popFront(){ return erase(0); }
 		Type popBack(){ return erase(this->size-1); }
 		
+		void fill(Type value)
+		{
+			while(this->size < this->capacity)
+				this->data[ this->size++ ] = value;
+		}
+		
 		void resize(size_t new_cap)
 		{
 			this->capacity = new_cap;
@@ -158,7 +176,10 @@ namespace DataStructure
 			std::stringstream ss;
 			if(c == ' ')
 				for(size_t i=0; i < this->size; i++)
-					ss << this->data[i] << " ";
+					ss << this->data[i] << ' ';
+			if(c == '|')
+				for(size_t i=0; i < this->size; i++)
+					ss << this->data[i] << '\n';
 			else if(c == 's')
 				for(size_t i=0; i < this->size; i++)
 					ss << this->data[i];

@@ -2,6 +2,7 @@
 #define MATRIX_H
 
 #include "Container.h"
+#include "Vector.h"
 
 namespace DataStructure
 {
@@ -19,7 +20,7 @@ namespace DataStructure
 			return &(this->data[m0][n0]);
 		}
 	public:
-		static size_t CellWidth;
+		static size_t Precision;
 		
 		//construtor e destrutor
 		Matrix<Type>()
@@ -37,7 +38,7 @@ namespace DataStructure
 				this->data[i] = new Type[this->n];
 		}
 		
-		Matrix<Type>(const Matrix<Type>& m) : Matrix<Type>(m.qtLines(), m.qtColumns())
+		Matrix<Type>(const Matrix<Type>& m) : Matrix<Type>(m.qtLines(), m.qtCols())
 		{
 			for(int i=0; i < this->m; i++)
 				for(int j=0; j < this->n; j++)
@@ -61,7 +62,7 @@ namespace DataStructure
 		{
 			this->~Matrix<Type>();
 			this->m = M.qtLines();
-			this->n = M.qtColumns();
+			this->n = M.qtCols();
 			this->data = new Type* [this->m];
 			
 			for(size_t i=0; i < this->m; i++)
@@ -73,11 +74,21 @@ namespace DataStructure
 			return *this;
 		}
 		
+		friend Matrix<Type>& operator&=(Matrix<Type>& A, Matrix<Type>& B)
+		{
+			A.~Matrix<Type>();
+			A.m &= B.m;
+			A.n &= B.n;
+			A.data = B.data;
+			return A;
+		}
+		
 		//busca e verificação
 		bool isAllocated() const { return this->data != nullptr; }
 		size_t getSize() const { return this->m * this->n; }
 		size_t qtLines() const { return this->m; }
-		size_t qtColumns() const { return this->n; }
+		size_t qtCols() const { return this->n; }
+		size_t getDim(bool d) const { return (d ? this->n : this->m); }
 		
 		bool contains(Type value) const
 		{
@@ -103,7 +114,7 @@ namespace DataStructure
 		template<typename T=Type>
 		decltype(auto) operator==(Matrix<T>& M)
 		{
-			if(m != M.qtLines() || n != M.qtColumns())
+			if(m != M.qtLines() || n != M.qtCols())
 				return false;
 			for(size_t i=0; i<m; i++)
 				for(size_t j=0; j<n; j++)
@@ -118,6 +129,7 @@ namespace DataStructure
 
 		//acesso e manipulação
 		Type* operator[](size_t ln) const { return this->data[ln]; }
+		Type& operator()(size_t ln, size_t col) const { return this->data[ln][col]; }
 		
 		Type get(size_t index) const { return *this->at(index); }
 		Type get(size_t i, size_t j) const { return this->data[i][j]; }
@@ -131,11 +143,56 @@ namespace DataStructure
 					this->data[i][j] = value;
 		}
 		
+		void resize(size_t new_m, size_t new_n)
+		{
+			Type **old_data = this->data;
+			this->data = new Type* [new_m];
+
+			for(size_t i=0; i < new_m; i++)
+			{
+				data[i] = new Type[new_n];
+				
+				for(size_t j=0; j < this->n; j++)
+					data[i][j] = old_data[i][j];
+				
+				delete[] old_data[i];
+			}
+			this->m = new_m;
+			this->n = new_n;
+			delete[] old_data;
+		}
+		
+		void resize(size_t new_m, size_t new_n, Type zero)
+		{
+			size_t old_m = this->m;
+			size_t old_n = this->n;
+			
+			resize(new_m, new_n);
+
+			for(size_t i=0; i < new_m; i++)
+			{
+				if(i == old_m)
+					old_n = 0;
+				for(size_t j=old_n; j < new_n; j++)
+					data[i][j] = zero;
+			}
+		}
+		
+		Matrix<Type> t()
+		{
+			Matrix<Type> temp = Matrix<Type>(this->n, this->m);
+			for(size_t i = 0; i < this->m; i++)
+				for(size_t j = 0; j < this->n; j++)
+					temp[j][i] = this->data[i][j];
+			return temp;
+		}
+		
 		//conversão para texto
 		template<typename T=Type, isPrintable<T>* = nullptr>
 		std::string strFormat(char c=' ') const 
 		{
 			std::stringstream ss;
+			ss << std::setprecision(Precision);
 			switch(c)
 			{
 			case '[':
@@ -143,8 +200,8 @@ namespace DataStructure
 				{
 					ss << "[";
 					for(size_t j=0; j < this->n; j++)
-						ss << std::setw(CellWidth) << this->data[i][j];
-					ss << "  ]";
+						ss << this->data[i][j] << ' ';
+					ss << "]";
 					if(i != this->m-1)
 						ss << "\n";
 				}
@@ -157,7 +214,7 @@ namespace DataStructure
 				for(size_t i=0; i < this->m; i++)
 				{
 					for(size_t j=0; j < this->n; j++)
-						ss << std::setw(CellWidth) << this->data[i][j];
+						ss << std::setw(Precision+4) << this->data[i][j] << ' ';
 					if(i != this->m-1)
 						ss << "\n";
 				}
@@ -171,45 +228,45 @@ namespace DataStructure
 		operator std::string() const { return this->strFormat(); }
 		virtual void print(){ std::cout << (this->strFormat()) << '\n'; }
 		
-		//matemático
-		template<class T>
+		//operações matemáticas
+		template<class T, void*>
 		friend Matrix<T> operator*(double k, Matrix<T> A);
 		
-		template<class T>
+		template<class T, void*>
 		friend Matrix<T> operator*(Matrix<T> A, double k);
 		
-		template<class T>
+		template<class T, void*>
 		friend Matrix<T> operator+(Matrix<T> A, Matrix<T> B);
 		
-		template<class T>
+		template<class T, void*>
 		friend Matrix<T> operator-(Matrix<T> A, Matrix<T> B);
 		
-		template<class T>
+		template<class T, void*>
 		friend Matrix<T> operator*(Matrix<T> A, Matrix<T> B);
 		
-		Matrix<Type> pow(unsigned int n)
-		{
-			static_assert(std::is_arithmetic<Type>::value, "Arithmetic type required.");
-			
-			if(n==1)
-				return (*this);
-			else if(n==2)
-				return (*this)*(*this);
-			else
-				return this->pow(n/2) * this->pow(n - n/2);
+		template<class T, void*>
+		friend Vector<T> operator*(Vector<T> x, Matrix<T> A);
+		
+		template<class T, void*>
+		friend Vector<T> operator*(Matrix<T> A, Vector<T> x);
+		
+		template<class T=Type, isFundamental<T>* = nullptr>
+		Matrix<T> pow(unsigned int k)
+		{	
+			if(k==1)		return (*this);
+			else if(k==2)	return (*this) * (*this);
+			else			return this->pow(k/2) * this->pow(k-k/2);
 		}
 	};
 	
 	template<class Type>
-	size_t Matrix<Type>::CellWidth = 6;
+	size_t Matrix<Type>::Precision = 3*sizeof(Type)/2;
 	
-	template<class Type>
+	template<class Type, isFundamental<Type>* = nullptr>
 	Matrix<Type> operator*(double k, Matrix<Type> A)
 	{
-		static_assert(std::is_arithmetic<Type>::value, "Arithmetic type required.");
-		
 		size_t m = A.qtLines();
-		size_t n = A.qtColumns();
+		size_t n = A.qtCols();
 		Matrix<Type> B = Matrix<Type>(m,n);
 		
 		for(size_t i=0; i<m; i++)
@@ -218,19 +275,15 @@ namespace DataStructure
 		return B;
 	}
 	
-	template<class Type>
+	template<class Type, isFundamental<Type>* = nullptr>
 	Matrix<Type> operator*(Matrix<Type> A, double k)
-	{
-		return k*A;
-	}
+	{ return k*A; }
 	
-	template<class Type>
+	template<class Type, isFundamental<Type>* = nullptr>
 	Matrix<Type> operator+(Matrix<Type> A, Matrix<Type> B)
 	{
-		static_assert(std::is_arithmetic<Type>::value, "Arithmetic type required.");
-		
 		size_t m = A.qtLines();
-		size_t n = B.qtColumns();
+		size_t n = B.qtCols();
 		Matrix<Type> C = Matrix<Type>(m,n);
 		
 		for(size_t i=0; i<m; i++)
@@ -239,13 +292,11 @@ namespace DataStructure
 		return C;
 	}
 	
-	template<class Type>
+	template<class Type, isFundamental<Type>* = nullptr>
 	Matrix<Type> operator-(Matrix<Type> A, Matrix<Type> B)
 	{
-		static_assert(std::is_arithmetic<Type>::value, "Arithmetic type required.");
-		
 		size_t m = A.qtLines();
-		size_t n = B.qtColumns();
+		size_t n = B.qtCols();
 		Matrix<Type> C = Matrix<Type>(m,n);
 		
 		for(size_t i=0; i<m; i++)
@@ -254,14 +305,12 @@ namespace DataStructure
 		return C;
 	}
 	
-	template<class Type>
+	template<class Type, isFundamental<Type>* = nullptr>
 	Matrix<Type> operator*(Matrix<Type> A, Matrix<Type> B)
 	{
-		static_assert(std::is_arithmetic<Type>::value, "Arithmetic type required.");
-		
 		size_t m = A.qtLines();
-		size_t n = B.qtColumns();
-		size_t r = A.qtColumns();
+		size_t n = B.qtCols();
+		size_t r = A.qtCols();
 		Matrix<Type> C = Matrix<Type>(m,n);
 		
 		for(size_t i=0; i<m; i++)
@@ -269,9 +318,41 @@ namespace DataStructure
 			{
 				C[i][j] = 0;
 				for(size_t k=0; k<r; k++)
-					C[i][j] += (A[i][k] * B[k][j]);
+					C[i][j] += A[i][k] * B[k][j];
 			}
 		return C;
+	}
+	
+	template<class Type, isFundamental<Type>* = nullptr>
+	Vector<Type> operator*(Vector<Type> x, Matrix<Type> A)
+	{
+		size_t m = x.getSize();
+		size_t n = A.qtCols();
+		Vector<Type> y = Vector<Type>(n,n);
+		
+		for(size_t j=0; j<n; j++)
+		{
+			y[j] = 0;
+			for(size_t i=0; i<m; i++)
+				y[j] += x[i] * A[i][j];
+		}
+		return y;
+	}
+	
+	template<class Type, isFundamental<Type>* = nullptr>
+	Vector<Type> operator*(Matrix<Type> A, Vector<Type> x)
+	{
+		size_t m = A.qtLines();
+		size_t n = x.getSize();
+		Vector<Type> y = Vector<Type>(m,m);
+		
+		for(size_t i=0; i<m; i++)
+		{
+			y[i] = 0;
+			for(size_t j=0; j<n; j++)
+				y[i] += A[i][j] * x[j];
+		}
+		return y;
 	}
 }
 #endif
